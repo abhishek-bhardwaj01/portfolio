@@ -43,7 +43,7 @@ export interface Experience {
 }
 
 const fallbackPersonal: Personal = {
-  fullName: "Abhishek Thakur",
+  fullName: "Abhishek Bhardwaj",
   role: "Graphic & UI Designer",
   greeting: "Hi, I'm",
   bio: "I'm a creative Graphic & UI Designer who turns ideas into impactful visuals. I specialize in branding, social media design, UI, video editing and short-form content creation.",
