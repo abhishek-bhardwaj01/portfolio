@@ -39,7 +39,7 @@ export function Navbar() {
     >
       <div className="mx-auto flex h-[72px] max-w-[1280px] items-center justify-between px-5 lg:px-8">
         <button onClick={() => go("home")} className="text-[22px] font-extrabold tracking-tight text-white">
-          AT
+          AB
         </button>
 
         <nav className="hidden items-center gap-4 xl:flex 2xl:gap-5">
