@@ -30,7 +30,7 @@ export const SERVICES = [
   },
 ];
 
-export const RESUME_TEXT = `ABHISHEK THAKUR
+export const RESUME_TEXT = `ABHISHEK BHARDWAJ
 Graphic / UI & UX Designer
 
 Email: iabhishekbhardwaj07@gmail.com
