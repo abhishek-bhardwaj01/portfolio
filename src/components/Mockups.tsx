@@ -11,7 +11,7 @@ export function PhoneMockup() {
           </span>
         </div>
         <div className="mb-2 flex items-center justify-between">
-          <span className="text-[10px] font-bold tracking-wider text-white">AT</span>
+          <span className="text-[10px] font-bold tracking-wider text-white">AB</span>
           <span className="h-4 w-4 rounded-full bg-white/10" />
         </div>
         <div className="mb-2 rounded-xl bg-gradient-to-br from-[#7c6bff] to-[#4b3bd6] p-2.5 shadow-lg shadow-indigo-900/40">
@@ -51,7 +51,7 @@ export function DashboardMockup() {
     <div className="relative h-full w-full overflow-hidden rounded-2xl bg-[#0b1020]">
       <div className="flex h-full">
         <div className="flex w-8 flex-col items-center gap-2 border-r border-white/5 bg-black/30 py-2">
-          <span className="text-[8px] font-bold text-white">AT</span>
+          <span className="text-[8px] font-bold text-white">AB</span>
           {[0, 1, 2, 3].map((i) => (
             <span key={i} className={`h-2.5 w-2.5 rounded ${i === 0 ? "bg-[#8b7cff]" : "bg-white/15"}`} />
           ))}
@@ -146,7 +146,7 @@ export function SocialMockup() {
           <span className="text-[10px]">➤</span>
         </div>
         <p className="text-[8px] leading-relaxed text-white/70">
-          <span className="font-semibold text-white">at.studio</span> Ideas turn into impact — new drop this week.
+          <span className="font-semibold text-white">ab.studio</span> Ideas turn into impact — new drop this week.
         </p>
       </div>
     </div>
