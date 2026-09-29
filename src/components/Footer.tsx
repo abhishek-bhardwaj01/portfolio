@@ -11,8 +11,8 @@ export function Footer() {
   return (
     <footer className="mx-auto flex max-w-[1280px] items-center justify-between gap-4 px-5 py-6 lg:px-8">
       <div className="flex items-center gap-4">
-        <span className="text-[18px] font-extrabold tracking-tight">AT</span>
-        <p className="hidden text-[12px] text-white/35 sm:block">© 2025 Abhishek Thakur. All rights reserved.</p>
+        <span className="text-[18px] font-extrabold tracking-tight">AB</span>
+        <p className="hidden text-[12px] text-white/35 sm:block">© 2025 Abhishek Bhardwaj. All rights reserved.</p>
       </div>
       <div className="flex items-center gap-2">
         {socials.map((s) => (
