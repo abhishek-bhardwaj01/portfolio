@@ -6,7 +6,7 @@ function downloadResume() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "Abhishek_Thakur_Resume.txt";
+  a.download = "Abhishek_Bhardwaj_Resume.txt";
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -92,7 +92,7 @@ export function Hero() {
 
           <img
             src="/images/hero-portrait.png"
-            alt="Abhishek Thakur"
+            alt="Abhishek Bhardwaj"
             className="absolute right-0 bottom-0 h-full w-[92%] object-cover object-[center_top] [mask-image:linear-gradient(to_right,transparent_0%,black_18%,black_100%)]"
           />
           <div className="absolute right-0 bottom-0 left-0 h-28 bg-gradient-to-t from-[#06080f] to-transparent" />
