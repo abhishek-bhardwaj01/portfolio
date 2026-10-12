@@ -416,20 +416,25 @@ export default function App() {
                     <div className="mt-3 flex flex-wrap gap-1.5">
                       {p.tags.map((t) => (<span key={t} className="rounded bg-white/5 px-2 py-0.5 text-[10px] text-white/50">{t}</span>))}
                     </div>
-                    {(p.liveUrl || p.githubUrl) && (
-                      <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-white/6 pt-3" onClick={(e) => e.stopPropagation()}>
-                        {p.liveUrl && (
-                          <a href={p.liveUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#8b7cff] transition hover:text-[#a99dff]">
-                            Live Demo <IconExternal size={12} />
-                          </a>
-                        )}
-                        {p.githubUrl && (
-                          <a href={p.githubUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[12px] font-medium text-white/55 transition hover:text-white">
-                            <IconGithub size={12} /> GitHub
-                          </a>
-                        )}
-                      </div>
-                    )}
+                    <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-white/6 pt-3" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedProject(p)}
+                        className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#8b7cff] transition hover:text-[#a99dff]"
+                      >
+                        View Project <IconExternal size={12} />
+                      </button>
+                      {p.liveUrl && (
+                        <a href={p.liveUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[12px] font-medium text-white/55 transition hover:text-white">
+                          Live Demo <IconExternal size={12} />
+                        </a>
+                      )}
+                      {p.githubUrl && (
+                        <a href={p.githubUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[12px] font-medium text-white/55 transition hover:text-white">
+                          <IconGithub size={12} /> GitHub
+                        </a>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
