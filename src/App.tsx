@@ -3,6 +3,35 @@ import { IconArrowRight, IconDownload, IconMail, IconPhone, IconPin, IconClose, 
 import { cn } from "./utils/cn";
 import { useCMS } from "./hooks/useCMS";
 import type { CMSData, ButtonConfig, ProjectItem } from "./cms/types";
+import { ToolIcon } from "./components/ToolIcons";
+
+function skillIconId(name: string): string {
+  const n = name.toLowerCase().replace(/\s+/g, "");
+  if (n.includes("figma")) return "figma";
+  if (n.includes("photoshop") || n === "ps") return "ps";
+  if (n.includes("illustrator") || n === "ai") return "ai";
+  if (n.includes("premiere")) return "pr";
+  if (n.includes("aftereffects") || n === "ae") return "ae";
+  if (n.includes("canva")) return "canva";
+  if (n.includes("capcut")) return "capcut";
+  if (n.includes("vscode") || n.includes("visualstudio")) return "vscode";
+  if (n.includes("notion")) return "notion";
+  if (n.includes("framer")) return "framer";
+  return "";
+}
+
+function skillAccent(name: string, fallback?: string): string {
+  const n = name.toLowerCase();
+  if (n.includes("figma")) return "#A259FF";
+  if (n.includes("photoshop")) return "#31A8FF";
+  if (n.includes("illustrator")) return "#FF9A00";
+  if (n.includes("premiere")) return "#EA77FF";
+  if (n.includes("canva")) return "#00C4CC";
+  if (n.includes("capcut")) return "#FFFFFF";
+  if (n.includes("html")) return "#E34F26";
+  if (n.includes("css")) return "#1572B6";
+  return fallback || "#8b7cff";
+}
 
 function IconExternal({ size = 14 }: { size?: number }) {
   return (
@@ -37,69 +66,37 @@ function ProjectModal({ project, onClose }: { project: ProjectItem; onClose: () 
   }, [onClose]);
 
   return (
-    <div
-      className="fixed inset-0 z-[70] flex items-start justify-center overflow-y-auto bg-black/70 p-4 pt-16 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div
-        className="relative mb-10 w-full max-w-2xl rounded-3xl border border-white/8 bg-[#080b12] p-5 shadow-2xl sm:p-8"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div className="fixed inset-0 z-[70] flex items-start justify-center overflow-y-auto bg-black/70 p-4 pt-16 backdrop-blur-sm" onClick={onClose}>
+      <div className="relative mb-10 w-full max-w-2xl rounded-3xl border border-white/8 bg-[#080b12] p-5 shadow-2xl sm:p-8" onClick={(e) => e.stopPropagation()}>
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
             <p className="text-[11px] tracking-[0.2em] text-white/40 uppercase">{project.type || project.category}</p>
             <h3 className="mt-1 text-2xl font-semibold text-white">{project.title}</h3>
           </div>
-          <button
-            onClick={onClose}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 text-white/70 hover:text-white"
-            aria-label="Close"
-          >
+          <button onClick={onClose} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 text-white/70 hover:text-white" aria-label="Close">
             <IconClose size={16} />
           </button>
         </div>
-
         <div className="overflow-hidden rounded-2xl">
-          <img
-            src={project.image}
-            alt={project.imageAlt || project.title}
-            className="aspect-[16/10] w-full object-cover"
-          />
+          <img src={project.image} alt={project.imageAlt || project.title} className="aspect-[16/10] w-full object-cover" />
         </div>
-
-        <p className="mt-5 text-[15px] leading-relaxed text-white/60">
-          {project.fullDescription || project.shortDescription}
-        </p>
-
+        <p className="mt-5 text-[15px] leading-relaxed text-white/60">{project.fullDescription || project.shortDescription}</p>
         {project.tags.length > 0 && (
           <div className="mt-4 flex flex-wrap gap-2">
             {project.tags.map((t) => (
-              <span key={t} className="rounded-full bg-white/5 px-3 py-1 text-[12px] text-white/55">
-                {t}
-              </span>
+              <span key={t} className="rounded-full bg-white/5 px-3 py-1 text-[12px] text-white/55">{t}</span>
             ))}
           </div>
         )}
-
         {(project.liveUrl || project.githubUrl) && (
           <div className="mt-6 flex flex-wrap gap-3">
             {project.liveUrl && (
-              <a
-                href={project.liveUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full bg-[#8b7cff] px-5 py-2.5 text-[13px] font-semibold text-white transition hover:bg-[#7a6bef]"
-              >
+              <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full bg-[#8b7cff] px-5 py-2.5 text-[13px] font-semibold text-white transition hover:bg-[#7a6bef]">
                 Live Demo <IconExternal size={14} />
               </a>
             )}
             {project.githubUrl && (
-              <a
-                href={project.githubUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-2.5 text-[13px] font-medium text-white/80 transition hover:border-white/30 hover:text-white"
-              >
+              <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-2.5 text-[13px] font-medium text-white/80 transition hover:border-white/30 hover:text-white">
                 <IconGithub size={14} /> GitHub
               </a>
             )}
@@ -413,14 +410,7 @@ export default function App() {
             <>
             <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {projects.map((p) => (
-                <div
-                  key={p.id}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => setSelectedProject(p)}
-                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedProject(p); } }}
-                  className="group cursor-pointer overflow-hidden rounded-2xl border border-white/8 bg-[#0c1018] transition hover:border-[#8b7cff]/30"
-                >
+                <div key={p.id} role="button" tabIndex={0} onClick={() => setSelectedProject(p)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedProject(p); } }} className="group cursor-pointer overflow-hidden rounded-2xl border border-white/8 bg-[#0c1018] transition hover:border-[#8b7cff]/30">
                   <div className="aspect-[4/3] overflow-hidden">
                     <img src={p.image} alt={p.imageAlt || p.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
                   </div>
@@ -431,11 +421,7 @@ export default function App() {
                       {p.tags.map((t) => (<span key={t} className="rounded bg-white/5 px-2 py-0.5 text-[10px] text-white/50">{t}</span>))}
                     </div>
                     <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-white/6 pt-3" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        type="button"
-                        onClick={() => setSelectedProject(p)}
-                        className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#8b7cff] transition hover:text-[#a99dff]"
-                      >
+                      <button type="button" onClick={() => setSelectedProject(p)} className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#8b7cff] transition hover:text-[#a99dff]">
                         View Project <IconExternal size={12} />
                       </button>
                       {p.liveUrl && (
@@ -471,13 +457,46 @@ export default function App() {
           <div className="mx-auto max-w-[1280px] px-5 lg:px-8">
             <p className="text-[12px] font-semibold tracking-[0.2em] text-[#8b7cff]">{cms.skills.badge}</p>
             <h2 className="mt-2 text-[32px] font-bold text-white sm:text-[40px]">{cms.skills.heading}</h2>
-            <div className="mt-10 grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
-              {skills.map((t) => (
-                <div key={t.id} className="flex flex-col items-center gap-2 rounded-2xl border border-white/8 bg-[#0c1018] p-4 transition hover:border-[#8b7cff]/40">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/5 text-[14px] font-bold text-white/80">{t.name.slice(0, 2)}</div>
-                  <span className="text-[11px] text-white/50">{t.name}</span>
-                </div>
-              ))}
+            <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4">
+              {skills.map((t) => {
+                const accent = skillAccent(t.name, t.color);
+                const iconId = skillIconId(t.name);
+                return (
+                  <div
+                    key={t.id}
+                    className="group relative overflow-hidden rounded-2xl border border-white/8 bg-gradient-to-b from-[#121826] to-[#0c1018] p-5 transition duration-300 hover:-translate-y-1 hover:border-white/20 hover:shadow-[0_12px_40px_-12px_rgba(139,124,255,0.35)]"
+                  >
+                    <div
+                      className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full opacity-20 blur-2xl transition group-hover:opacity-40"
+                      style={{ background: accent }}
+                    />
+                    <div className="relative flex items-center gap-4">
+                      <div
+                        className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-black/40 shadow-inner"
+                        style={{ boxShadow: `inset 0 0 0 1px ${accent}22` }}
+                      >
+                        {iconId ? (
+                          <ToolIcon id={iconId} />
+                        ) : (
+                          <span className="text-[15px] font-bold" style={{ color: accent }}>
+                            {t.name.slice(0, 2)}
+                          </span>
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-[15px] font-semibold text-white">{t.name}</p>
+                        <p className="mt-0.5 text-[12px] text-white/40">{t.category || "Tool"}</p>
+                      </div>
+                    </div>
+                    <div className="mt-4 h-1 w-full overflow-hidden rounded-full bg-white/5">
+                      <div
+                        className="h-full w-3/4 rounded-full transition group-hover:w-full"
+                        style={{ background: `linear-gradient(90deg, ${accent}, transparent)` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>
