@@ -255,7 +255,7 @@ export default function App() {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({
-          access_key: "YOUR_WEB3FORMS_ACCESS_KEY",
+          access_key: "459d8fb3-657d-4ca3-8d64-f223eb9bfbee",
           subject: `Portfolio Contact from ${form.name}`,
           from_name: form.name,
           email: form.email,
