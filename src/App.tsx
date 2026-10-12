@@ -216,7 +216,7 @@ function Navbar({ cms }: { cms: CMSData }) {
 export default function App() {
   const { data: cms, loading } = useCMS();
   const [filter, setFilter] = useState("all");
-  const [visibleCount, setVisibleCount] = useState(4);
+  const [visibleCount, setVisibleCount] = useState(8);
   const [selectedProject, setSelectedProject] = useState<ProjectItem | null>(null);
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
@@ -228,7 +228,7 @@ export default function App() {
   }, [cms.site.seoTitle, cms.site.seoDescription]);
 
   useEffect(() => {
-    setVisibleCount(4);
+    setVisibleCount(8);
   }, [filter]);
 
   if (loading) {
@@ -397,7 +397,7 @@ export default function App() {
                 ))}
               </div>
             </div>
-            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {projects.map((p) => (
                 <div
                   key={p.id}
@@ -441,7 +441,7 @@ export default function App() {
             </div>
             {hasMore && (
               <div className="mt-10 flex justify-center">
-                <button onClick={() => setVisibleCount((c) => c + 3)} className="inline-flex items-center gap-2 rounded-full border border-white/15 px-6 py-2.5 text-[13px] font-medium text-white/80 transition hover:border-[#8b7cff]/50 hover:text-white">
+                <button onClick={() => setVisibleCount((c) => c + 4)} className="inline-flex items-center gap-2 rounded-full border border-white/15 px-6 py-2.5 text-[13px] font-medium text-white/80 transition hover:border-[#8b7cff]/50 hover:text-white">
                   Load More
                 </button>
               </div>
