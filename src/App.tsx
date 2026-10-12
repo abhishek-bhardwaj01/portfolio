@@ -111,6 +111,16 @@ function ProjectModal({ project, onClose }: { project: ProjectItem; onClose: () 
 }
 
 function downloadResume(cms: CMSData) {
+  const pdfUrl = (cms.site as { resumeUrl?: string }).resumeUrl;
+  if (pdfUrl) {
+    const a = document.createElement("a");
+    a.href = pdfUrl;
+    a.download = cms.site.resumeFilename || "Resume.pdf";
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.click();
+    return;
+  }
   const blob = new Blob([cms.site.resumeText], { type: "text/plain;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
