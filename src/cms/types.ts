@@ -36,8 +36,11 @@ export interface SiteSettings {
   seoTitle: string;
   seoDescription: string;
   ogImage: string;
+  /** Fallback plain-text resume (used if no PDF uploaded) */
   resumeText: string;
   resumeFilename: string;
+  /** Path to uploaded PDF resume e.g. /resume/Abhishek_Resume.pdf */
+  resumeUrl: string;
   navCta: ButtonConfig;
 }
 
