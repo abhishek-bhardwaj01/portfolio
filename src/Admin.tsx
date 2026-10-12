@@ -140,8 +140,8 @@ export default function Admin(){
                 <div key={String(l)} className="rounded-xl border border-white/8 bg-[#121826] p-5"><p className="text-3xl font-bold">{v}</p><p className="mt-1 text-sm text-white/45">{l}</p></div>
               ))}
               <div className="sm:col-span-2 rounded-xl border border-white/8 bg-[#121826] p-5 text-sm text-white/50 space-y-2">
-                <p><strong className="text-white/80">Site</strong> → upload PDF resume. <strong className="text-white/80">Projects</strong> → Live Demo & GitHub links.</p>
-                <p>Images: Media sidebar or Upload on Hero/About/Projects. Publish after edits.</p>
+                <p><strong className="text-white/80">Site</strong> → PDF resume. <strong className="text-white/80">Skills</strong> → name, category, color. <strong className="text-white/80">Projects</strong> → Live/GitHub.</p>
+                <p>Publish after every change. Live in ~1–2 min on Vercel.</p>
               </div>
             </div>
           )}
@@ -149,7 +149,7 @@ export default function Admin(){
           {section==="media"&&(
             <div className="space-y-4">
               <C title="Media library">
-                <p className="text-sm text-white/50">Upload → GitHub <code className="text-white/70">public/images/</code>. Path auto-fills on Hero/About/Projects. Live after Vercel deploy (~1–2 min). Max 4MB.</p>
+                <p className="text-sm text-white/50">Upload → GitHub <code className="text-white/70">public/images/</code>. Max 4MB.</p>
                 <button className={btn} disabled={mediaUp} onClick={()=>mediaRef.current?.click()}>{mediaUp?"Uploading…":"+ Upload image"}</button>
                 <input ref={mediaRef} type="file" accept="image/*" className="hidden" onChange={async e=>{
                   const file=e.target.files?.[0];e.target.value="";
@@ -234,7 +234,7 @@ export default function Admin(){
             <C title="Socials">
               {cms.socials.map((item,idx)=>(
                 <div key={item.id} className="grid gap-2 sm:grid-cols-3">
-                  <input className={ic} value={item.label} onChange={e=>{const n=[...cms.socials];n[idx]={...item,url:e.target.value};patch("socials",n);}}/>
+                  <input className={ic} value={item.label} onChange={e=>{const n=[...cms.socials];n[idx]={...item,label:e.target.value};patch("socials",n);}}/>
                   <input className={ic} value={item.url} onChange={e=>{const n=[...cms.socials];n[idx]={...item,url:e.target.value};patch("socials",n);}}/>
                   <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={item.enabled} onChange={e=>{const n=[...cms.socials];n[idx]={...item,enabled:e.target.checked};patch("socials",n);}}/> On</label>
                 </div>
@@ -296,16 +296,44 @@ export default function Admin(){
             </div>
           )}
           {section==="skills"&&(
-            <C title="Skills">
-              <F label="Heading"><input className={ic} value={cms.skills.heading} onChange={e=>patch("skills",{...cms.skills,heading:e.target.value})}/></F>
-              {cms.skills.items.map((s,idx)=>(
-                <div key={s.id} className="flex gap-2">
-                  <input className={ic} value={s.name} onChange={e=>{const items=[...cms.skills.items];items[idx]={...s,name:e.target.value};patch("skills",{...cms.skills,items});}}/>
-                  <button className="text-xs text-red-400" onClick={()=>patch("skills",{...cms.skills,items:cms.skills.items.filter(x=>x.id!==s.id)})}>X</button>
-                </div>
-              ))}
-              <button className={btn} onClick={()=>patch("skills",{...cms.skills,items:[...cms.skills.items,{id:"sk"+Date.now(),name:"New",category:"Design",color:"#888",icon:"",enabled:true,order:cms.skills.items.length}]})}>+ Add</button>
-            </C>
+            <div className="space-y-4">
+              <C title="Skills section">
+                <F label="Badge"><input className={ic} value={cms.skills.badge} onChange={e=>patch("skills",{...cms.skills,badge:e.target.value})}/></F>
+                <F label="Heading"><input className={ic} value={cms.skills.heading} onChange={e=>patch("skills",{...cms.skills,heading:e.target.value})}/></F>
+                <label className="flex items-center gap-2 text-sm text-white/70">
+                  <input type="checkbox" checked={cms.skills.enabled} onChange={e=>patch("skills",{...cms.skills,enabled:e.target.checked})}/>
+                  Section enabled
+                </label>
+              </C>
+              <C title="Skill items">
+                <p className="text-xs text-white/40">Name appears on the site. Category shows under the name. Color is used for accent glow.</p>
+                {cms.skills.items.map((s,idx)=>(
+                  <div key={s.id} className="rounded-xl border border-white/8 bg-[#0b0f19] p-4 space-y-3">
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <F label="Name"><input className={ic} value={s.name} onChange={e=>{const items=[...cms.skills.items];items[idx]={...s,name:e.target.value};patch("skills",{...cms.skills,items});}}/></F>
+                      <F label="Category (e.g. Design, Video, Frontend)"><input className={ic} value={s.category||""} onChange={e=>{const items=[...cms.skills.items];items[idx]={...s,category:e.target.value};patch("skills",{...cms.skills,items});}}/></F>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      <F label="Accent color">
+                        <div className="flex items-center gap-2">
+                          <input type="color" value={s.color||"#888888"} onChange={e=>{const items=[...cms.skills.items];items[idx]={...s,color:e.target.value};patch("skills",{...cms.skills,items});}} className="h-10 w-12 cursor-pointer rounded border border-white/10 bg-transparent"/>
+                          <input className={ic} value={s.color||""} onChange={e=>{const items=[...cms.skills.items];items[idx]={...s,color:e.target.value};patch("skills",{...cms.skills,items});}} placeholder="#A259FF"/>
+                        </div>
+                      </F>
+                      <F label="Order"><input type="number" className={ic} value={s.order??idx} onChange={e=>{const items=[...cms.skills.items];items[idx]={...s,order:Number(e.target.value)||0};patch("skills",{...cms.skills,items});}}/></F>
+                      <div className="flex items-end gap-3 pb-1">
+                        <label className="flex items-center gap-2 text-sm text-white/70">
+                          <input type="checkbox" checked={s.enabled!==false} onChange={e=>{const items=[...cms.skills.items];items[idx]={...s,enabled:e.target.checked};patch("skills",{...cms.skills,items});}}/>
+                          Visible
+                        </label>
+                        <button type="button" className="text-xs text-red-400 hover:text-red-300" onClick={()=>patch("skills",{...cms.skills,items:cms.skills.items.filter(x=>x.id!==s.id)})}>Delete</button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                <button className={btn} onClick={()=>patch("skills",{...cms.skills,items:[...cms.skills.items,{id:"sk"+Date.now(),name:"New Skill",category:"Design",color:"#8b7cff",icon:"",enabled:true,order:cms.skills.items.length}]})}>+ Add skill</button>
+              </C>
+            </div>
           )}
           {section==="experience"&&(
             <C title="Experience">
