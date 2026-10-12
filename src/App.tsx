@@ -2,7 +2,113 @@ import { useEffect, useState } from "react";
 import { IconArrowRight, IconDownload, IconMail, IconPhone, IconPin, IconClose, IconMenu } from "./components/Icons";
 import { cn } from "./utils/cn";
 import { useCMS } from "./hooks/useCMS";
-import type { CMSData, ButtonConfig } from "./cms/types";
+import type { CMSData, ButtonConfig, ProjectItem } from "./cms/types";
+
+function IconExternal({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path d="M14 5H19V10" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M19 5L10 14" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M19 14V18C19 18.6 18.6 19 18 19H6C5.4 19 5 18.6 5 18V6C5 5.4 5.4 5 6 5H10" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function IconGithub({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.604-3.369-1.341-3.369-1.341-.454-1.155-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z" />
+    </svg>
+  );
+}
+
+function ProjectModal({ project, onClose }: { project: ProjectItem; onClose: () => void }) {
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[70] flex items-start justify-center overflow-y-auto bg-black/70 p-4 pt-16 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="relative mb-10 w-full max-w-2xl rounded-3xl border border-white/8 bg-[#080b12] p-5 shadow-2xl sm:p-8"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-5 flex items-start justify-between gap-4">
+          <div>
+            <p className="text-[11px] tracking-[0.2em] text-white/40 uppercase">{project.type || project.category}</p>
+            <h3 className="mt-1 text-2xl font-semibold text-white">{project.title}</h3>
+          </div>
+          <button
+            onClick={onClose}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 text-white/70 hover:text-white"
+            aria-label="Close"
+          >
+            <IconClose size={16} />
+          </button>
+        </div>
+
+        <div className="overflow-hidden rounded-2xl">
+          <img
+            src={project.image}
+            alt={project.imageAlt || project.title}
+            className="aspect-[16/10] w-full object-cover"
+          />
+        </div>
+
+        <p className="mt-5 text-[15px] leading-relaxed text-white/60">
+          {project.fullDescription || project.shortDescription}
+        </p>
+
+        {project.tags.length > 0 && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {project.tags.map((t) => (
+              <span key={t} className="rounded-full bg-white/5 px-3 py-1 text-[12px] text-white/55">
+                {t}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {(project.liveUrl || project.githubUrl) && (
+          <div className="mt-6 flex flex-wrap gap-3">
+            {project.liveUrl && (
+              <a
+                href={project.liveUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full bg-[#8b7cff] px-5 py-2.5 text-[13px] font-semibold text-white transition hover:bg-[#7a6bef]"
+              >
+                Live Demo <IconExternal size={14} />
+              </a>
+            )}
+            {project.githubUrl && (
+              <a
+                href={project.githubUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-2.5 text-[13px] font-medium text-white/80 transition hover:border-white/30 hover:text-white"
+              >
+                <IconGithub size={14} /> GitHub
+              </a>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 function downloadResume(cms: CMSData) {
   const blob = new Blob([cms.site.resumeText], { type: "text/plain;charset=utf-8" });
@@ -110,6 +216,8 @@ function Navbar({ cms }: { cms: CMSData }) {
 export default function App() {
   const { data: cms, loading } = useCMS();
   const [filter, setFilter] = useState("all");
+  const [visibleCount, setVisibleCount] = useState(6);
+  const [selectedProject, setSelectedProject] = useState<ProjectItem | null>(null);
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [status, setStatus] = useState<"idle" | "sent" | "error">("idle");
 
@@ -118,6 +226,10 @@ export default function App() {
     const meta = document.querySelector('meta[name="description"]');
     if (meta) meta.setAttribute("content", cms.site.seoDescription);
   }, [cms.site.seoTitle, cms.site.seoDescription]);
+
+  useEffect(() => {
+    setVisibleCount(6);
+  }, [filter]);
 
   if (loading) {
     return (
@@ -128,7 +240,9 @@ export default function App() {
   }
 
   const projectCats = cms.projects.categories.filter((c) => c.enabled).sort((a, b) => a.order - b.order);
-  const projects = cms.projects.items.filter((p) => p.published).filter((p) => filter === "all" || p.category === filter).sort((a, b) => a.order - b.order);
+  const allProjects = cms.projects.items.filter((p) => p.published).filter((p) => filter === "all" || p.category === filter).sort((a, b) => a.order - b.order);
+  const projects = allProjects.slice(0, visibleCount);
+  const hasMore = visibleCount < allProjects.length;
   const skills = cms.skills.items.filter((s) => s.enabled).sort((a, b) => a.order - b.order);
   const experience = cms.experience.items.filter((e) => e.enabled).sort((a, b) => a.order - b.order);
   const stats = cms.stats.filter((s) => s.enabled).sort((a, b) => a.order - b.order);
@@ -255,9 +369,16 @@ export default function App() {
                 ))}
               </div>
             </div>
-            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {projects.map((p) => (
-                <div key={p.id} className="group overflow-hidden rounded-2xl border border-white/8 bg-[#0c1018] transition hover:border-[#8b7cff]/30">
+                <div
+                  key={p.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setSelectedProject(p)}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedProject(p); } }}
+                  className="group cursor-pointer overflow-hidden rounded-2xl border border-white/8 bg-[#0c1018] transition hover:border-[#8b7cff]/30"
+                >
                   <div className="aspect-[4/3] overflow-hidden">
                     <img src={p.image} alt={p.imageAlt || p.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
                   </div>
@@ -267,13 +388,48 @@ export default function App() {
                     <div className="mt-3 flex flex-wrap gap-1.5">
                       {p.tags.map((t) => (<span key={t} className="rounded bg-white/5 px-2 py-0.5 text-[10px] text-white/50">{t}</span>))}
                     </div>
+                    {(p.liveUrl || p.githubUrl) && (
+                      <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-white/6 pt-3" onClick={(e) => e.stopPropagation()}>
+                        {p.liveUrl && (
+                          <a
+                            href={p.liveUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#8b7cff] transition hover:text-[#a99dff]"
+                          >
+                            Live Demo <IconExternal size={12} />
+                          </a>
+                        )}
+                        {p.githubUrl && (
+                          <a
+                            href={p.githubUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 text-[12px] font-medium text-white/55 transition hover:text-white"
+                          >
+                            <IconGithub size={12} /> GitHub
+                          </a>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
             </div>
+            {hasMore && (
+              <div className="mt-10 flex justify-center">
+                <button
+                  onClick={() => setVisibleCount((c) => c + 3)}
+                  className="inline-flex items-center gap-2 rounded-full border border-white/15 px-6 py-2.5 text-[13px] font-medium text-white/80 transition hover:border-[#8b7cff]/50 hover:text-white"
+                >
+                  Load More
+                </button>
+              </div>
+            )}
           </div>
         </section>
       )}
+      {selectedProject && <ProjectModal project={selectedProject} onClose={() => setSelectedProject(null)} />}
       {cms.skills.enabled && (
         <section id="skills" className="border-t border-white/6 py-20">
           <div className="mx-auto max-w-[1280px] px-5 lg:px-8">
@@ -330,17 +486,31 @@ export default function App() {
           <div className="mx-auto grid max-w-[1280px] gap-10 px-5 lg:grid-cols-2 lg:px-8">
             <div>
               <p className="text-[12px] font-semibold tracking-[0.2em] text-[#8b7cff]">{cms.contact.badge}</p>
-              <h2 className="mt-2 text-[32px] font-bold text-white sm:text-[40px]">{cms.contact.heading}<br /><span className="text-[#8b7cff]">{cms.contact.headingHighlight}</span></h2>
-              <p className="mt-4 max-w-md text-[15px] text-white/50">{cms.contact.description}</p>
+              <h2 className="mt-2 text-[32px] font-bold text-white sm:text-[40px]">
+                {cms.contact.heading} <span className="text-[#8b7cff]">{cms.contact.headingHighlight}</span>
+              </h2>
+              <p className="mt-4 max-w-md text-[15px] text-white/55">{cms.contact.description}</p>
               <div className="mt-8 space-y-4">
-                <a href={`mailto:${cms.site.email}`} className="flex items-center gap-3 text-white/70 transition hover:text-white">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10"><IconMail size={16} /></span>{cms.site.email}
-                </a>
-                <a href={`tel:${cms.site.phone.replace(/\s/g, "")}`} className="flex items-center gap-3 text-white/70 transition hover:text-white">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10"><IconPhone size={16} /></span>{cms.site.phone}
-                </a>
-                <div className="flex items-center gap-3 text-white/70">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10"><IconPin size={16} /></span>{cms.site.location}
+                <div className="flex items-center gap-3">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10"><IconMail size={16} /></span>
+                  <div>
+                    <p className="text-[12px] text-white/40">Email</p>
+                    <p className="text-[14px] text-white/80">{cms.site.email}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10"><IconPhone size={16} /></span>
+                  <div>
+                    <p className="text-[12px] text-white/40">Phone</p>
+                    <p className="text-[14px] text-white/80">{cms.site.phone}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10"><IconPin size={16} /></span>
+                  <div>
+                    <p className="text-[12px] text-white/40">Location</p>
+                    <p className="text-[14px] text-white/80">{cms.site.location}</p>
+                  </div>
                 </div>
               </div>
             </div>
