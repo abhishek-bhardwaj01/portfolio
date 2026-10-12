@@ -397,6 +397,10 @@ export default function App() {
                 ))}
               </div>
             </div>
+            {allProjects.length === 0 ? (
+              <p className="mt-10 text-center text-[14px] text-white/40">No projects in this category yet.</p>
+            ) : (
+            <>
             <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {projects.map((p) => (
                 <div
@@ -445,6 +449,8 @@ export default function App() {
                   Load More
                 </button>
               </div>
+            )}
+            </>
             )}
           </div>
         </section>
