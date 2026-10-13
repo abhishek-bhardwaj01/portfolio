@@ -38,6 +38,7 @@ Logo Design, Branding, Social Media Graphics, UI Mockups, Poster & Banner Design
 Tools: Canva, Figma, Adobe Illustrator, Photoshop, Premiere Pro, CapCut
 `,
     resumeFilename: "Abhishek_Bhardwaj_Resume.txt",
+    resumeUrl: "",
     navCta: { text: "Let's Talk", url: "#contact", openInNewTab: false, enabled: true },
   },
 
@@ -70,7 +71,7 @@ Tools: Canva, Figma, Adobe Illustrator, Photoshop, Premiere Pro, CapCut
     tools: ["Figma", "Photoshop", "Illustrator", "Premiere Pro", "Canva", "CapCut"],
     image: "/images/hero-portrait.png",
     imageAlt: "Abhishek Bhardwaj",
-    handwriting: "Better\nIdeas\nBetter\nProducts",
+    handwriting: "",
     enabled: true,
   },
 
@@ -115,9 +116,9 @@ Tools: Canva, Figma, Adobe Illustrator, Photoshop, Premiere Pro, CapCut
         id: "p1",
         title: "Accessories Website UI",
         shortDescription: "UI Mockup",
+        type: "UI Mockup",
         fullDescription: "Created a basic wireframe and UI mockup of an Accessories Website using Figma.",
         category: "uiux",
-        type: "UI Mockup",
         image: "/images/ui-laptop.png",
         imageAlt: "Accessories Website UI",
         gallery: [],
