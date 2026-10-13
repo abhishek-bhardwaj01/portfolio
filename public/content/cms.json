@@ -12,14 +12,14 @@
     "seoDescription": "Abhishek Bhardwaj — creative designer and content creator. UI/UX, graphic design, video and content that connect with people.",
     "ogImage": "/images/passport-photo-1791731710349.jpeg",
     "resumeText": "ABHISHEK BHARDWAJ\nGraphic / UI & UX Designer\n\nEmail: iabhishekbhardwaj07@gmail.com\nPhone: +91 98827 00510\nLocation: Mandi (175001), Himachal Pradesh\n\nABOUT\nI'm a creative Graphic & UI Designer who turns ideas into impactful visuals.\n",
-    "resumeFilename": "pdf-sample_0.pdf",
+    "resumeFilename": "Abhishek Resume (1).pdf",
     "navCta": {
       "text": "Let's Talk",
       "url": "#contact",
       "openInNewTab": false,
       "enabled": true
     },
-    "resumeUrl": "/resume/pdf-sample-0-1791783405372.pdf"
+    "resumeUrl": "/resume/abhishek-resume-1-1791871539172.pdf"
   },
   "navigation": [
     {
@@ -389,24 +389,6 @@
         "icon": "",
         "enabled": true,
         "order": 5
-      },
-      {
-        "id": "sk7",
-        "name": "HTML5",
-        "category": "Frontend",
-        "color": "#E34F26",
-        "icon": "",
-        "enabled": true,
-        "order": 6
-      },
-      {
-        "id": "sk8",
-        "name": "CSS3",
-        "category": "Frontend",
-        "color": "#1572B6",
-        "icon": "",
-        "enabled": true,
-        "order": 7
       }
     ]
   },
