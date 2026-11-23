@@ -119,6 +119,29 @@ export default function Admin(){
   },[token,section]);
 
   const patch=<K extends keyof CMSData>(k:K,v:CMSData[K])=>setCms(p=>({...p,[k]:v}));
+  const sectionVisible=(id:Sid):boolean|null=>{
+    if(id==="hero")return cms.hero.enabled;
+    if(id==="stats")return cms.statsEnabled!==false;
+    if(id==="about")return cms.about.enabled;
+    if(id==="projects")return cms.projects.enabled;
+    if(id==="skills")return cms.skills.enabled;
+    if(id==="experience")return cms.experience.enabled;
+    if(id==="cta")return cms.cta.enabled;
+    if(id==="contact")return cms.contact.enabled;
+    if(id==="footer")return cms.footer.enabled;
+    return null;
+  };
+  const setSectionVisible=(id:Sid,on:boolean)=>{
+    if(id==="hero")patch("hero",{...cms.hero,enabled:on});
+    else if(id==="stats")setCms(p=>({...p,statsEnabled:on}));
+    else if(id==="about")patch("about",{...cms.about,enabled:on});
+    else if(id==="projects")patch("projects",{...cms.projects,enabled:on});
+    else if(id==="skills")patch("skills",{...cms.skills,enabled:on});
+    else if(id==="experience")patch("experience",{...cms.experience,enabled:on});
+    else if(id==="cta")patch("cta",{...cms.cta,enabled:on});
+    else if(id==="contact")patch("contact",{...cms.contact,enabled:on});
+    else if(id==="footer")patch("footer",{...cms.footer,enabled:on});
+  };
   const publish=useCallback(async()=>{
     if(!token)return;setSaving(true);setMessage("");
     try{
@@ -148,17 +171,35 @@ export default function Admin(){
 
   return(
     <div className="flex min-h-screen bg-[#0b0f19] text-white">
-      <aside className="fixed inset-y-0 left-0 z-40 flex w-48 flex-col border-r border-white/8 bg-[#121826]">
+      <aside className="fixed inset-y-0 left-0 z-40 flex w-56 flex-col border-r border-white/8 bg-[#121826]">
         <div className="flex items-center gap-2 px-4 py-5"><div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-xs font-bold">AB</div><span className="text-sm font-semibold">CMS</span></div>
         <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 pb-4">
-          {NAV.map(i=><button key={i.id} onClick={()=>setSection(i.id)} className={`w-full rounded-lg px-3 py-2 text-left text-sm ${section===i.id?"bg-white/10 text-white":"text-white/50 hover:bg-white/5"}`}>{i.label}</button>)}
+          {NAV.map(i=>{
+            const vis=sectionVisible(i.id);
+            return (
+              <div key={i.id} className={`flex items-center rounded-lg pr-1 ${section===i.id?"bg-white/10":"hover:bg-white/5"}`}>
+                <button onClick={()=>setSection(i.id)} className={`min-w-0 flex-1 rounded-lg px-3 py-2 text-left text-sm ${section===i.id?"text-white":"text-white/50"}`}>{i.label}</button>
+                {vis!==null && (
+                  <button
+                    type="button"
+                    title={vis?"Hide on site":"Show on site"}
+                    onClick={()=>setSectionVisible(i.id,!vis)}
+                    className={`relative h-5 w-9 shrink-0 rounded-full transition ${vis?"bg-emerald-500":"bg-white/15"}`}
+                    aria-label={vis?"Hide "+i.label:"Show "+i.label}
+                  >
+                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition ${vis?"left-4":"left-0.5"}`}/>
+                  </button>
+                )}
+              </div>
+            );
+          })}
         </nav>
         <div className="border-t border-white/8 p-3">
           <p className="mb-1 truncate text-xs text-white/40">@{user.login}</p>
           <button onClick={()=>{localStorage.removeItem("gh_token");setToken(null);setUser(null);}} className="text-sm text-red-400">Logout</button>
         </div>
       </aside>
-      <div className="ml-48 flex flex-1 flex-col">
+      <div className="ml-56 flex flex-1 flex-col">
         <header className="sticky top-0 z-30 flex items-center justify-between border-b border-white/8 bg-[#0b0f19]/90 px-6 py-4 backdrop-blur">
           <h1 className="text-lg font-semibold capitalize">{section}</h1>
           <button onClick={publish} disabled={saving} className={btn}>{saving?"Publishing...":"Publish"}</button>
