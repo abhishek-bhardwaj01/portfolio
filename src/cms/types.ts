@@ -244,4 +244,6 @@ export interface CMSData {
   cta: CtaSection;
   contact: ContactSection;
   footer: FooterContent;
+  /** When false the stats strip is hidden. Missing = visible. */
+  statsEnabled?: boolean;
 }

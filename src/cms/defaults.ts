@@ -329,7 +329,9 @@ Tools: Canva, Figma, Adobe Illustrator, Photoshop, Premiere Pro, CapCut
 
   footer: {
     copyright: "© {year} Abhishek Bhardwaj. All rights reserved.",
-    showSocials: false,
+    showSocials: true,
     enabled: true,
   },
+  statsEnabled: true,
 };
+

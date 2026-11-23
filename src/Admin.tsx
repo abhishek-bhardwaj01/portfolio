@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import type { CMSData } from "./cms/types";
+import type { CMSData, ProjectItem } from "./cms/types";
 import { defaultCMS } from "./cms/defaults";
 import { REPO, IMAGES_DIR, uploadImageToGitHub, uploadPdfToGitHub } from "./cms/mediaUpload";
 
@@ -17,6 +17,35 @@ const lb = "mb-1.5 block text-xs font-medium text-white/50";
 const btn = "rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-500 disabled:opacity-50";
 function F({label,children}:{label:string;children:React.ReactNode}){return <div><label className={lb}>{label}</label>{children}</div>;}
 function C({title,children}:{title:string;children:React.ReactNode}){return <div className="rounded-xl border border-white/8 bg-[#121826] p-6"><h2 className="mb-5 text-base font-semibold text-white">{title}</h2><div className="space-y-4">{children}</div></div>;}
+
+function ShowHide({on,onChange}:{on:boolean;onChange:(v:boolean)=>void}){
+  return (
+    <button type="button" onClick={()=>onChange(!on)} className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ${on?"bg-emerald-500/15 text-emerald-300":"bg-white/5 text-white/45"}`}>
+      <span className={`h-2 w-2 rounded-full ${on?"bg-emerald-400":"bg-white/30"}`}/>
+      {on?"Showing on site":"Hidden from site"}
+    </button>
+  );
+}
+
+function ProjectPreview({project,onClose}:{project:ProjectItem;onClose:()=>void}){
+  return (
+    <div className="fixed inset-0 z-[80] flex items-start justify-center overflow-y-auto bg-black/70 p-4 pt-12" onClick={onClose}>
+      <div className="mb-10 w-full max-w-2xl rounded-3xl border border-white/10 bg-[#080b12] p-6" onClick={e=>e.stopPropagation()}>
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <div>
+            <p className="text-[11px] tracking-[0.2em] text-white/40 uppercase">{project.type || project.category}</p>
+            <h3 className="mt-1 text-2xl font-semibold">{project.title}</h3>
+          </div>
+          <button type="button" onClick={onClose} className="rounded-full border border-white/15 px-3 py-1 text-xs text-white/70">Close</button>
+        </div>
+        {project.image ? <img src={project.image} alt="" className="aspect-[16/10] w-full rounded-2xl object-cover"/> : <div className="flex aspect-[16/10] items-center justify-center rounded-2xl border border-dashed border-white/15 text-sm text-white/30">No image</div>}
+        <p className="mt-5 whitespace-pre-wrap text-[15px] leading-relaxed text-white/70">{project.fullDescription || project.shortDescription || "No description yet."}</p>
+        {project.tags.length>0 && <div className="mt-4 flex flex-wrap gap-2">{project.tags.map(t=><span key={t} className="rounded-full bg-white/5 px-3 py-1 text-[12px] text-white/55">{t}</span>)}</div>}
+        <p className="mt-4 text-xs text-white/35">This is how the popup looks when someone clicks the project on the site.</p>
+      </div>
+    </div>
+  );
+}
 
 function ImageField({label,value,onChange,token}:{label:string;value:string;onChange:(v:string)=>void;token:string|null}){
   const ref=useRef<HTMLInputElement>(null);
@@ -57,6 +86,7 @@ export default function Admin(){
   const [message,setMessage]=useState("");
   const [mediaList,setMediaList]=useState<string[]>(["/images/hero-portrait.png","/images/about-portrait.png","/images/ui-laptop.png","/images/content-impact.png","/images/poster-brand.png","/images/poster-good-things.png"]);
   const [mediaUp,setMediaUp]=useState(false);
+  const [previewProject,setPreviewProject]=useState<ProjectItem|null>(null);
   const mediaRef=useRef<HTMLInputElement>(null);
 
   useEffect(()=>{
@@ -135,14 +165,34 @@ export default function Admin(){
         <main className="flex-1 overflow-y-auto px-6 py-6">
           {message&&<div className="mb-4 rounded-lg border border-white/10 bg-[#121826] px-4 py-3 text-sm">{message}</div>}
           {section==="dashboard"&&(
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {[["Projects",cms.projects.items.length],["Skills",cms.skills.items.length],["Experience",cms.experience.items.length],["Stats",cms.stats.length]].map(([l,v])=>(
-                <div key={String(l)} className="rounded-xl border border-white/8 bg-[#121826] p-5"><p className="text-3xl font-bold">{v}</p><p className="mt-1 text-sm text-white/45">{l}</p></div>
-              ))}
-              <div className="sm:col-span-2 rounded-xl border border-white/8 bg-[#121826] p-5 text-sm text-white/50 space-y-2">
-                <p><strong className="text-white/80">Site</strong> → PDF resume. <strong className="text-white/80">Skills</strong> → name, category, color. <strong className="text-white/80">Projects</strong> → Live/GitHub.</p>
-                <p>Publish after every change. Live in ~1–2 min on Vercel.</p>
+            <div className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {[["Projects",cms.projects.items.length],["Skills",cms.skills.items.length],["Experience",cms.experience.items.length],["Stats",cms.stats.length]].map(([l,v])=>(
+                  <div key={String(l)} className="rounded-xl border border-white/8 bg-[#121826] p-5"><p className="text-3xl font-bold">{v}</p><p className="mt-1 text-sm text-white/45">{l}</p></div>
+                ))}
               </div>
+              <C title="Page sections — show or hide">
+                <p className="text-sm text-white/45">Hidden sections stay in the CMS but do not appear on the live site. Publish after changing.</p>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {[
+                    ["Hero", cms.hero.enabled, (v:boolean)=>patch("hero",{...cms.hero,enabled:v})],
+                    ["Stats", cms.statsEnabled!==false, (v:boolean)=>setCms(p=>({...p,statsEnabled:v}))],
+                    ["About", cms.about.enabled, (v:boolean)=>patch("about",{...cms.about,enabled:v})],
+                    ["Contact info", cms.contactInfo.enabled, (v:boolean)=>patch("contactInfo",{...cms.contactInfo,enabled:v})],
+                    ["Projects", cms.projects.enabled, (v:boolean)=>patch("projects",{...cms.projects,enabled:v})],
+                    ["Skills", cms.skills.enabled, (v:boolean)=>patch("skills",{...cms.skills,enabled:v})],
+                    ["Experience", cms.experience.enabled, (v:boolean)=>patch("experience",{...cms.experience,enabled:v})],
+                    ["CTA", cms.cta.enabled, (v:boolean)=>patch("cta",{...cms.cta,enabled:v})],
+                    ["Contact form", cms.contact.enabled, (v:boolean)=>patch("contact",{...cms.contact,enabled:v})],
+                    ["Footer", cms.footer.enabled, (v:boolean)=>patch("footer",{...cms.footer,enabled:v})],
+                  ].map(([label,on,set])=>(
+                    <div key={String(label)} className="flex items-center justify-between rounded-lg border border-white/8 bg-[#0b0f19] px-3 py-2.5">
+                      <span className="text-sm">{String(label)}</span>
+                      <ShowHide on={Boolean(on)} onChange={set as (v:boolean)=>void}/>
+                    </div>
+                  ))}
+                </div>
+              </C>
             </div>
           )}
 
@@ -221,28 +271,34 @@ export default function Admin(){
           )}
           {section==="navigation"&&(
             <C title="Navigation">
+              <p className="text-xs text-white/40">Add, edit, hide, or remove menu links. Href is the section id (about, work, skills) or a full URL.</p>
               {cms.navigation.map((item,idx)=>(
-                <div key={item.id} className="grid gap-2 sm:grid-cols-3">
+                <div key={item.id} className="grid gap-2 sm:grid-cols-[1fr_1fr_auto_auto] sm:items-center">
                   <input className={ic} value={item.label} onChange={e=>{const n=[...cms.navigation];n[idx]={...item,label:e.target.value};patch("navigation",n);}}/>
                   <input className={ic} value={item.href} onChange={e=>{const n=[...cms.navigation];n[idx]={...item,href:e.target.value};patch("navigation",n);}}/>
-                  <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={item.enabled} onChange={e=>{const n=[...cms.navigation];n[idx]={...item,enabled:e.target.checked};patch("navigation",n);}}/> On</label>
+                  <ShowHide on={item.enabled} onChange={v=>{const n=[...cms.navigation];n[idx]={...item,enabled:v};patch("navigation",n);}}/>
+                  <button type="button" className="text-xs text-red-400" onClick={()=>patch("navigation",cms.navigation.filter(x=>x.id!==item.id))}>Remove</button>
                 </div>
               ))}
+              <button className={btn} onClick={()=>patch("navigation",[...cms.navigation,{id:"n"+Date.now(),label:"New link",href:"about",enabled:true,order:cms.navigation.length}])}>+ Add link</button>
             </C>
           )}
           {section==="socials"&&(
             <C title="Socials">
               {cms.socials.map((item,idx)=>(
-                <div key={item.id} className="grid gap-2 sm:grid-cols-3">
+                <div key={item.id} className="grid gap-2 sm:grid-cols-[1fr_1fr_auto_auto] sm:items-center">
                   <input className={ic} value={item.label} onChange={e=>{const n=[...cms.socials];n[idx]={...item,label:e.target.value};patch("socials",n);}}/>
                   <input className={ic} value={item.url} onChange={e=>{const n=[...cms.socials];n[idx]={...item,url:e.target.value};patch("socials",n);}}/>
-                  <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={item.enabled} onChange={e=>{const n=[...cms.socials];n[idx]={...item,enabled:e.target.checked};patch("socials",n);}}/> On</label>
+                  <ShowHide on={item.enabled} onChange={v=>{const n=[...cms.socials];n[idx]={...item,enabled:v};patch("socials",n);}}/>
+                  <button type="button" className="text-xs text-red-400" onClick={()=>patch("socials",cms.socials.filter(x=>x.id!==item.id))}>Remove</button>
                 </div>
               ))}
+              <button className={btn} onClick={()=>patch("socials",[...cms.socials,{id:"s"+Date.now(),platform:"link",label:"New",url:"https://",enabled:true,order:cms.socials.length}])}>+ Add social</button>
             </C>
           )}
           {section==="hero"&&(
             <C title="Hero">
+              <ShowHide on={cms.hero.enabled} onChange={v=>patch("hero",{...cms.hero,enabled:v})}/>
               <F label="Greeting"><input className={ic} value={cms.hero.greeting} onChange={e=>patch("hero",{...cms.hero,greeting:e.target.value})}/></F>
               <F label="Line 1"><input className={ic} value={cms.hero.headlineLine1} onChange={e=>patch("hero",{...cms.hero,headlineLine1:e.target.value})}/></F>
               <F label="Highlight"><input className={ic} value={cms.hero.headlineHighlight} onChange={e=>patch("hero",{...cms.hero,headlineHighlight:e.target.value})}/></F>
@@ -254,16 +310,21 @@ export default function Admin(){
           )}
           {section==="stats"&&(
             <C title="Stats">
+              <ShowHide on={cms.statsEnabled!==false} onChange={v=>setCms(p=>({...p,statsEnabled:v}))}/>
               {cms.stats.map((s,idx)=>(
-                <div key={s.id} className="grid gap-2 sm:grid-cols-2">
+                <div key={s.id} className="grid gap-2 sm:grid-cols-[1fr_1fr_auto_auto] sm:items-center">
                   <input className={ic} value={s.value} onChange={e=>{const n=[...cms.stats];n[idx]={...s,value:e.target.value};patch("stats",n);}}/>
                   <input className={ic} value={s.label} onChange={e=>{const n=[...cms.stats];n[idx]={...s,label:e.target.value};patch("stats",n);}}/>
+                  <ShowHide on={s.enabled} onChange={v=>{const n=[...cms.stats];n[idx]={...s,enabled:v};patch("stats",n);}}/>
+                  <button type="button" className="text-xs text-red-400" onClick={()=>patch("stats",cms.stats.filter(x=>x.id!==s.id))}>Remove</button>
                 </div>
               ))}
+              <button className={btn} onClick={()=>patch("stats",[...cms.stats,{id:"st"+Date.now(),value:"0",label:"New stat",enabled:true,order:cms.stats.length}])}>+ Add stat</button>
             </C>
           )}
           {section==="about"&&(
             <C title="About">
+              <ShowHide on={cms.about.enabled} onChange={v=>patch("about",{...cms.about,enabled:v})}/>
               <F label="Badge"><input className={ic} value={cms.about.badge} onChange={e=>patch("about",{...cms.about,badge:e.target.value})}/></F>
               <F label="Heading"><input className={ic} value={cms.about.heading} onChange={e=>patch("about",{...cms.about,heading:e.target.value})}/></F>
               <F label="Paragraphs"><textarea className={ic} rows={4} value={cms.about.paragraphs.join("\n")} onChange={e=>patch("about",{...cms.about,paragraphs:e.target.value.split("\n").filter(Boolean)})}/></F>
@@ -273,24 +334,25 @@ export default function Admin(){
           {section==="projects"&&(
             <div className="space-y-4">
               <C title="Projects section">
+                <ShowHide on={cms.projects.enabled} onChange={v=>patch("projects",{...cms.projects,enabled:v})}/>
                 <F label="Badge"><input className={ic} value={cms.projects.badge} onChange={e=>patch("projects",{...cms.projects,badge:e.target.value})}/></F>
                 <F label="Heading"><input className={ic} value={cms.projects.heading} onChange={e=>patch("projects",{...cms.projects,heading:e.target.value})}/></F>
+                <p className="text-xs text-white/40">Clicking a project on the site opens a popup with the image and full description. There is no external link.</p>
               </C>
-              <button className={btn} onClick={()=>patch("projects",{...cms.projects,items:[...cms.projects.items,{id:"p"+Date.now(),title:"New",shortDescription:"",fullDescription:"",category:"uiux",type:"",image:"",imageAlt:"",gallery:[],tags:[],technologies:[],liveUrl:"",githubUrl:"",client:"",date:"",featured:false,published:true,order:cms.projects.items.length}]})}>+ Add Project</button>
+              <button className={btn} onClick={()=>patch("projects",{...cms.projects,items:[...cms.projects.items,{id:"p"+Date.now(),title:"New project",shortDescription:"",fullDescription:"",category:"uiux",type:"",image:"",imageAlt:"",gallery:[],tags:[],technologies:[],liveUrl:"",githubUrl:"",client:"",date:"",featured:false,published:true,order:cms.projects.items.length}]})}>+ Add Project</button>
               {cms.projects.items.map((p,idx)=>(
                 <C key={p.id} title={p.title}>
                   <F label="Title"><input className={ic} value={p.title} onChange={e=>{const items=[...cms.projects.items];items[idx]={...p,title:e.target.value};patch("projects",{...cms.projects,items});}}/></F>
                   <F label="Category (uiux / graphic / video / content)"><input className={ic} value={p.category} onChange={e=>{const items=[...cms.projects.items];items[idx]={...p,category:e.target.value};patch("projects",{...cms.projects,items});}}/></F>
                   <ImageField label="Project image" value={p.image} token={token} onChange={v=>{const items=[...cms.projects.items];items[idx]={...p,image:v};patch("projects",{...cms.projects,items});}}/>
-                  <F label="Description"><textarea className={ic} rows={2} value={p.fullDescription} onChange={e=>{const items=[...cms.projects.items];items[idx]={...p,fullDescription:e.target.value};patch("projects",{...cms.projects,items});}}/></F>
+                  <F label="Full description (shown in the popup)"><textarea className={ic} rows={5} value={p.fullDescription} onChange={e=>{const items=[...cms.projects.items];items[idx]={...p,fullDescription:e.target.value};patch("projects",{...cms.projects,items});}}/></F>
                   <F label="Type (e.g. UI Mockup)"><input className={ic} value={p.type||""} onChange={e=>{const items=[...cms.projects.items];items[idx]={...p,type:e.target.value};patch("projects",{...cms.projects,items});}}/></F>
                   <F label="Tags"><input className={ic} value={p.tags.join(", ")} onChange={e=>{const items=[...cms.projects.items];items[idx]={...p,tags:e.target.value.split(",").map(t=>t.trim()).filter(Boolean)};patch("projects",{...cms.projects,items});}}/></F>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <F label="Live Demo URL"><input className={ic} value={p.liveUrl||""} placeholder="https://..." onChange={e=>{const items=[...cms.projects.items];items[idx]={...p,liveUrl:e.target.value};patch("projects",{...cms.projects,items});}}/></F>
-                    <F label="GitHub URL"><input className={ic} value={p.githubUrl||""} placeholder="https://github.com/..." onChange={e=>{const items=[...cms.projects.items];items[idx]={...p,githubUrl:e.target.value};patch("projects",{...cms.projects,items});}}/></F>
-                  </div>
                   <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={p.published} onChange={e=>{const items=[...cms.projects.items];items[idx]={...p,published:e.target.checked};patch("projects",{...cms.projects,items});}}/> Published</label>
-                  <button className="text-xs text-red-400" onClick={()=>patch("projects",{...cms.projects,items:cms.projects.items.filter(x=>x.id!==p.id)})}>Delete</button>
+                  <div className="flex gap-3">
+                    <button type="button" className="rounded-lg border border-white/15 px-3 py-1.5 text-xs text-white/80" onClick={()=>setPreviewProject({...cms.projects.items[idx]})}>Preview popup</button>
+                    <button type="button" className="text-xs text-red-400" onClick={()=>patch("projects",{...cms.projects,items:cms.projects.items.filter(x=>x.id!==p.id)})}>Remove</button>
+                  </div>
                 </C>
               ))}
             </div>
@@ -337,17 +399,24 @@ export default function Admin(){
           )}
           {section==="experience"&&(
             <C title="Experience">
+              <ShowHide on={cms.experience.enabled} onChange={v=>patch("experience",{...cms.experience,enabled:v})}/>
               {cms.experience.items.map((e,idx)=>(
                 <div key={e.id} className="space-y-2 border-b border-white/8 pb-4">
                   <input className={ic} value={e.title} onChange={ev=>{const items=[...cms.experience.items];items[idx]={...e,title:ev.target.value};patch("experience",{...cms.experience,items});}}/>
                   <input className={ic} value={e.company} onChange={ev=>{const items=[...cms.experience.items];items[idx]={...e,company:ev.target.value};patch("experience",{...cms.experience,items});}}/>
                   <input className={ic} value={e.period} onChange={ev=>{const items=[...cms.experience.items];items[idx]={...e,period:ev.target.value};patch("experience",{...cms.experience,items});}}/>
+                  <div className="flex items-center gap-3">
+                    <ShowHide on={e.enabled!==false} onChange={v=>{const items=[...cms.experience.items];items[idx]={...e,enabled:v};patch("experience",{...cms.experience,items});}}/>
+                    <button type="button" className="text-xs text-red-400" onClick={()=>patch("experience",{...cms.experience,items:cms.experience.items.filter(x=>x.id!==e.id)})}>Remove</button>
+                  </div>
                 </div>
               ))}
+              <button className={btn} onClick={()=>patch("experience",{...cms.experience,items:[...cms.experience.items,{id:"e"+Date.now(),title:"New role",company:"Company",employmentType:"",period:"",startDate:"",endDate:"",isCurrent:false,description:"",responsibilities:[],technologies:[],location:"",companyUrl:"",logo:"",enabled:true,order:cms.experience.items.length}]})}>+ Add experience</button>
             </C>
           )}
           {section==="cta"&&(
             <C title="CTA">
+              <ShowHide on={cms.cta.enabled} onChange={v=>patch("cta",{...cms.cta,enabled:v})}/>
               <F label="Heading"><input className={ic} value={cms.cta.heading} onChange={e=>patch("cta",{...cms.cta,heading:e.target.value})}/></F>
               <F label="Description"><input className={ic} value={cms.cta.description} onChange={e=>patch("cta",{...cms.cta,description:e.target.value})}/></F>
               <F label="Button"><input className={ic} value={cms.cta.button.text} onChange={e=>patch("cta",{...cms.cta,button:{...cms.cta.button,text:e.target.value}})}/></F>
@@ -355,6 +424,7 @@ export default function Admin(){
           )}
           {section==="contact"&&(
             <C title="Contact">
+              <ShowHide on={cms.contact.enabled} onChange={v=>patch("contact",{...cms.contact,enabled:v})}/>
               <F label="Heading"><input className={ic} value={cms.contact.heading} onChange={e=>patch("contact",{...cms.contact,heading:e.target.value})}/></F>
               <F label="Highlight"><input className={ic} value={cms.contact.headingHighlight} onChange={e=>patch("contact",{...cms.contact,headingHighlight:e.target.value})}/></F>
               <F label="Description"><textarea className={ic} rows={2} value={cms.contact.description} onChange={e=>patch("contact",{...cms.contact,description:e.target.value})}/></F>
@@ -362,11 +432,13 @@ export default function Admin(){
           )}
           {section==="footer"&&(
             <C title="Footer">
+              <ShowHide on={cms.footer.enabled} onChange={v=>patch("footer",{...cms.footer,enabled:v})}/>
               <F label="Copyright"><input className={ic} value={cms.footer.copyright} onChange={e=>patch("footer",{...cms.footer,copyright:e.target.value})}/></F>
             </C>
           )}
         </main>
       </div>
+      {previewProject && <ProjectPreview project={previewProject} onClose={()=>setPreviewProject(null)}/>}
     </div>
   );
 }
