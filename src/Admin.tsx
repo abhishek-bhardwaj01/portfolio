@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import type { CMSData, ProjectItem } from "./cms/types";
 import { defaultCMS } from "./cms/defaults";
-import { REPO, IMAGES_DIR, uploadImageToGitHub, uploadPdfToGitHub } from "./cms/mediaUpload";
+import { REPO, IMAGES_DIR, uploadImageToGitHub, uploadPdfToGitHub, deleteImageFromGitHub } from "./cms/mediaUpload";
 
 const CMS_PATH = "public/content/cms.json";
 type Sid = "dashboard"|"media"|"site"|"seo"|"navigation"|"socials"|"hero"|"stats"|"about"|"projects"|"skills"|"experience"|"cta"|"contact"|"footer";
@@ -84,7 +84,8 @@ export default function Admin(){
   const [loaded,setLoaded]=useState(false);
   const [saving,setSaving]=useState(false);
   const [message,setMessage]=useState("");
-  const [mediaList,setMediaList]=useState<string[]>(["/images/hero-portrait.png","/images/about-portrait.png","/images/ui-laptop.png","/images/content-impact.png","/images/poster-brand.png","/images/poster-good-things.png"]);
+  const [mediaList,setMediaList]=useState<{path:string;sha?:string}[]>([]);
+  const [removing,setRemoving]=useState<string|null>(null);
   const [mediaUp,setMediaUp]=useState(false);
   const [previewProject,setPreviewProject]=useState<ProjectItem|null>(null);
   const mediaRef=useRef<HTMLInputElement>(null);
@@ -112,7 +113,7 @@ export default function Admin(){
     fetch(`https://api.github.com/repos/${REPO}/contents/${IMAGES_DIR}`,{headers:{Authorization:`Bearer ${token}`}})
       .then(r=>r.ok?r.json():[]).then(arr=>{
         if(!Array.isArray(arr))return;
-        const names=arr.filter((f:any)=>f.type==="file"&&f.name).map((f:any)=>`/images/${f.name}`);
+        const names=arr.filter((f:any)=>f.type==="file"&&f.name).map((f:any)=>({path:`/images/${f.name}`,sha:f.sha as string|undefined}));
         if(names.length)setMediaList(names);
       }).catch(()=>{});
   },[token,section]);
@@ -206,17 +207,27 @@ export default function Admin(){
                   if(!file||!token)return;setMediaUp(true);setMessage("");
                   const res=await uploadImageToGitHub(token,file);setMediaUp(false);
                   if(res.error){setMessage(res.error);return;}
-                  setMediaList(prev=>prev.includes(res.path)?prev:[res.path,...prev]);
+                  setMediaList(prev=>prev.some(m=>m.path===res.path)?prev:[{path:res.path},...prev]);
                   setMessage("Uploaded "+res.path);
                 }}/>
               </C>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                {mediaList.map(path=>(
-                  <div key={path} className="overflow-hidden rounded-xl border border-white/8 bg-[#121826]">
-                    <div className="aspect-square bg-black/40"><img src={path} alt="" className="h-full w-full object-cover"/></div>
+                {mediaList.map(item=>(
+                  <div key={item.path} className="overflow-hidden rounded-xl border border-white/8 bg-[#121826]">
+                    <div className="aspect-square bg-black/40"><img src={item.path} alt="" className="h-full w-full object-cover"/></div>
                     <div className="p-2 space-y-1">
-                      <p className="truncate text-[11px] text-white/70">{path}</p>
-                      <button type="button" className="w-full rounded-lg border border-white/15 px-2 py-1 text-[10px] text-white/70" onClick={()=>{navigator.clipboard?.writeText(path);setMessage("Copied: "+path);}}>Copy path</button>
+                      <p className="truncate text-[11px] text-white/70">{item.path}</p>
+                      <button type="button" className="w-full rounded-lg border border-white/15 px-2 py-1 text-[10px] text-white/70" onClick={()=>{navigator.clipboard?.writeText(item.path);setMessage("Copied: "+item.path);}}>Copy path</button>
+                      <button type="button" disabled={removing===item.path} className="w-full rounded-lg border border-red-500/40 px-2 py-1 text-[10px] text-red-400 hover:bg-red-500/10 disabled:opacity-50" onClick={async()=>{
+                        if(!token)return;
+                        if(!confirm("Remove this image from the site?"))return;
+                        setRemoving(item.path);setMessage("");
+                        const res=await deleteImageFromGitHub(token,item.path,item.sha);
+                        setRemoving(null);
+                        if(!res.ok){setMessage(res.error||"Remove failed");return;}
+                        setMediaList(prev=>prev.filter(m=>m.path!==item.path));
+                        setMessage("Removed "+item.path);
+                      }}>{removing===item.path?"Removing…":"Remove"}</button>
                     </div>
                   </div>
                 ))}

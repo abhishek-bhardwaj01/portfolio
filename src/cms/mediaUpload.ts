@@ -61,6 +61,43 @@ export async function uploadImageToGitHub(
   }
 }
 
+/** Delete an image from public/images/. publicPath is like /images/file.png */
+export async function deleteImageFromGitHub(
+  token: string,
+  publicPath: string,
+  sha?: string
+): Promise<{ ok: boolean; error?: string }> {
+  const name = publicPath.replace(/^\/images\//, "");
+  if (!name || name.includes("..") || name.includes("/")) return { ok: false, error: "Invalid image path" };
+  const repoPath = `${IMAGES_DIR}/${name}`;
+  try {
+    let fileSha = sha;
+    if (!fileSha) {
+      const getRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${repoPath}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!getRes.ok) return { ok: false, error: "File not found on GitHub" };
+      fileSha = (await getRes.json()).sha;
+    }
+    const del = await fetch(`https://api.github.com/repos/${REPO}/contents/${repoPath}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: `CMS: remove image ${name}`,
+        sha: fileSha,
+        branch: "main",
+      }),
+    });
+    if (!del.ok) {
+      const err = await del.json().catch(() => ({}));
+      return { ok: false, error: err.message || `Remove failed (${del.status})` };
+    }
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Remove failed" };
+  }
+}
+
 /** Upload PDF resume to public/resume/ */
 export async function uploadPdfToGitHub(
   token: string,
